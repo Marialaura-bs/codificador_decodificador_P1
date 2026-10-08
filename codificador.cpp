@@ -85,14 +85,12 @@ int fatorVencimento(int dia, int mes, int ano)
 }
 
 
-// Converte o valor para centavos e cria o campo de 10 posições.
+// Converte o valor para centavos.
 string valorBoleto(double valor)
 {
-    int centavos = round(valor * 100);
+    long long centavos = llround(valor * 100);
 
     string valorString = to_string(centavos);
-
-    valorString = completarZeros(valorString, 10);
 
     return valorString;
 }
@@ -104,7 +102,6 @@ int modulo11Dv(string codigo)
     int soma = 0;
     int multiplicador = 2;
 
-    // Percorre da direita para a esquerda.
     for (int i = codigo.length() - 1; i >= 0; i--)
     {
         int numero = codigo[i] - '0';
@@ -131,115 +128,125 @@ int modulo11Dv(string codigo)
 }
 
 
-// Monta o código de barras de acordo com o tipo de convênio.
-string codigoBarras(string banco, string moeda, int venc, double valor,
-                    int tipoConvenio, string convenio,
-                    string complemento, string agencia,
-                    string conta, string carteira)
+// Monta o código de barras.
+string codigoBarras(string banco, string moeda, int venc,
+                    double valor, int tipoConvenio, string campoLivre)
 {
     string codigo;
 
-    // Banco: 3 posições
+    // Completa o banco para 3 posições.
     banco = completarZeros(banco, 3);
 
-    // Fator de vencimento: 4 posições
-    string fator = completarZeros(to_string(venc), 4);
-
-    // Valor: 10 posições
+    // Converte o valor para centavos.
     string valorCampo = valorBoleto(valor);
 
-    // Campos específicos do convênio.
-    if (tipoConvenio == 4)
-    {
-        convenio = completarZeros(convenio, 4);
-        complemento = completarZeros(complemento, 7);
-        agencia = completarZeros(agencia, 4);
-        conta = completarZeros(conta, 8);
-        carteira = completarZeros(carteira, 2);
 
-        codigo =
-            banco +
-            moeda +
-            "0" +
-            fator +
-            valorCampo +
-            convenio +
-            complemento +
-            agencia +
-            conta +
-            carteira;
-    }
-    else if (tipoConvenio == 6)
-    {
-        convenio = completarZeros(convenio, 6);
-        complemento = completarZeros(complemento, 5);
-        agencia = completarZeros(agencia, 4);
-        conta = completarZeros(conta, 8);
-        carteira = completarZeros(carteira, 2);
+    // Verifica se o valor ultrapassou as 10 posições.
+    bool valorMaiorQue10 = valorCampo.length() > 10;
 
-        codigo =
-            banco +
-            moeda +
-            "0" +
-            fator +
-            valorCampo +
-            convenio +
-            complemento +
-            agencia +
-            conta +
-            carteira;
+
+    // Se passar de 14 posições, não cabe no espaço
+    // ocupado pelo fator + valor.
+    if (valorCampo.length() > 14)
+    {
+        return "";
     }
+
+
+    // Valor maior que 10 posições:
+    // ocupa as 14 posições que seriam fator + valor.
+    if (valorMaiorQue10)
+    {
+        valorCampo = completarZeros(valorCampo, 14);
+    }
+    else
+    {
+        // Valor normal ocupa 10 posições.
+        valorCampo = completarZeros(valorCampo, 10);
+    }
+
+
+    // Começa com banco + moeda + DV temporário.
+    codigo = banco + moeda + "0";
+
+
+    // Se o valor for maior que 10 posições,
+    // o fator de vencimento é eliminado.
+    if (valorMaiorQue10)
+    {
+        codigo += valorCampo;
+    }
+    else
+    {
+        codigo += to_string(venc);
+        codigo += valorCampo;
+    }
+
+
+    // Formatos de 4 e 6 posições.
+    if (tipoConvenio == 4 || tipoConvenio == 6)
+    {
+        if (campoLivre.length() > 25)
+        {
+            return "";
+        }
+
+        campoLivre = completarZeros(campoLivre, 25);
+
+        codigo += campoLivre;
+    }
+
+
+    // Formato de 7 posições.
     else if (tipoConvenio == 7)
     {
-        convenio = completarZeros(convenio, 7);
-        complemento = completarZeros(complemento, 10);
-        carteira = completarZeros(carteira, 2);
+        if (campoLivre.length() > 19)
+        {
+            return "";
+        }
 
-        codigo =
-            banco +
-            moeda +
-            "0" +
-            fator +
-            valorCampo +
-            "000000" +
-            convenio +
-            complemento +
-            carteira;
+        campoLivre = completarZeros(campoLivre, 19);
+
+        codigo += "000000";
+        codigo += campoLivre;
     }
-    else if (tipoConvenio == 17)
+
+
+    // Formato de 17 posições.
+    else // assume que qualquer valor do tipo de convenio que seja diferente aos anteriores será livre ou seja 17 posições.
     {
-        convenio = completarZeros(convenio, 6);
-        complemento = completarZeros(complemento, 17);
+        if (campoLivre.length() > 23)
+        {
+            return "";
+        }
 
-        // Para o Nosso Número livre de 17 posições,
-        // o documento determina obrigatoriamente "21".
-        codigo =
-            banco +
-            moeda +
-            "0" +
-            fator +
-            valorCampo +
-            convenio +
-            complemento +
-            "21";
+        campoLivre = completarZeros(campoLivre, 23);
+
+        codigo += campoLivre;
+        codigo += "21";
     }
 
-    // Verifica se o código possui as 44 posições.
+
+    // O código de barras precisa ter exatamente 44 posições.
     if (codigo.length() != 44)
     {
         return "";
     }
 
-    // Calcula o DV usando as 43 posições,
-    // ignorando temporariamente a posição 5.
+
+    // Retira temporariamente o DV da posição 5.
     string codigoSemDv =
         codigo.substr(0, 4) +
         codigo.substr(5, 39);
 
+
+    // Calcula o DV do código de barras.
     int dv = modulo11Dv(codigoSemDv);
 
-    // Coloca o DV na posição 5.
+
+    // Coloca o DV calculado na posição 5.
     codigo[4] = char('0' + dv);
+
 
     return codigo;
 }
@@ -249,6 +256,7 @@ int main()
 {
     string banco;
     string moeda;
+    string campoLivre;
 
     int dia, mes, ano;
     int tipoConvenio;
@@ -276,49 +284,37 @@ int main()
     cout << "Tipo de convenio (4, 6, 7 ou 17): ";
     cin >> tipoConvenio;
 
-    string convenio;
-    string complemento;
-    string agencia;
-    string conta;
-    string carteira;
-
-    cout << "Numero do convenio: ";
-    cin >> convenio;
-
-    cout << "Complemento do Nosso Numero: ";
-    cin >> complemento;
 
     if (tipoConvenio == 4 || tipoConvenio == 6)
     {
-        cout << "Agencia: ";
-        cin >> agencia;
-
-        cout << "Conta: ";
-        cin >> conta;
-
-        cout << "Carteira: ";
-        cin >> carteira;
+        cout << "Campo livre (ate 25 caracteres): ";
+        cin >> campoLivre;
     }
     else if (tipoConvenio == 7)
     {
-        cout << "Carteira: ";
-        cin >> carteira;
+        cout << "Campo livre (ate 19 caracteres): ";
+        cin >> campoLivre;
+    }
+    else
+    {
+        cout << "Campo livre (ate 23 caracteres): ";
+        cin >> campoLivre;
     }
 
+    // Calcula o fator de vencimento.
     int venc = fatorVencimento(dia, mes, ano);
 
+
+    // Monta o código de barras.
     string codigo = codigoBarras(
         banco,
         moeda,
         venc,
         valor,
         tipoConvenio,
-        convenio,
-        complemento,
-        agencia,
-        conta,
-        carteira
+        campoLivre
     );
+
 
     if (codigo == "")
     {

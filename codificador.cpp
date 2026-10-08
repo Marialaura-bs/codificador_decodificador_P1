@@ -6,6 +6,10 @@
 using namespace std;
 
 
+// ======================================================
+// FUNÇÕES BÁSICAS
+// ======================================================
+
 // Completa um campo com zeros à esquerda até atingir o tamanho desejado.
 string completarZeros(string campo, int tamanho)
 {
@@ -128,6 +132,10 @@ int modulo11Dv(string codigo)
 }
 
 
+// ======================================================
+// CÓDIGO DE BARRAS
+// ======================================================
+
 // Monta o código de barras.
 string codigoBarras(string banco, string moeda, int venc,
                     double valor, int tipoConvenio, string campoLivre)
@@ -140,10 +148,8 @@ string codigoBarras(string banco, string moeda, int venc,
     // Converte o valor para centavos.
     string valorCampo = valorBoleto(valor);
 
-
     // Verifica se o valor ultrapassou as 10 posições.
     bool valorMaiorQue10 = valorCampo.length() > 10;
-
 
     // Se passar de 14 posições, não cabe no espaço
     // ocupado pelo fator + valor.
@@ -151,7 +157,6 @@ string codigoBarras(string banco, string moeda, int venc,
     {
         return "";
     }
-
 
     // Valor maior que 10 posições:
     // ocupa as 14 posições que seriam fator + valor.
@@ -165,10 +170,8 @@ string codigoBarras(string banco, string moeda, int venc,
         valorCampo = completarZeros(valorCampo, 10);
     }
 
-
     // Começa com banco + moeda + DV temporário.
     codigo = banco + moeda + "0";
-
 
     // Se o valor for maior que 10 posições,
     // o fator de vencimento é eliminado.
@@ -182,7 +185,6 @@ string codigoBarras(string banco, string moeda, int venc,
         codigo += valorCampo;
     }
 
-
     // Formatos de 4 e 6 posições.
     if (tipoConvenio == 4 || tipoConvenio == 6)
     {
@@ -195,7 +197,6 @@ string codigoBarras(string banco, string moeda, int venc,
 
         codigo += campoLivre;
     }
-
 
     // Formato de 7 posições.
     else if (tipoConvenio == 7)
@@ -211,9 +212,8 @@ string codigoBarras(string banco, string moeda, int venc,
         codigo += campoLivre;
     }
 
-
     // Formato de 17 posições.
-    else // assume que qualquer valor do tipo de convenio que seja diferente aos anteriores será livre ou seja 17 posições.
+    else
     {
         if (campoLivre.length() > 23)
         {
@@ -226,31 +226,40 @@ string codigoBarras(string banco, string moeda, int venc,
         codigo += "21";
     }
 
-
     // O código de barras precisa ter exatamente 44 posições.
     if (codigo.length() != 44)
     {
         return "";
     }
 
-
     // Retira temporariamente o DV da posição 5.
     string codigoSemDv =
         codigo.substr(0, 4) +
         codigo.substr(5, 39);
 
-
     // Calcula o DV do código de barras.
     int dv = modulo11Dv(codigoSemDv);
-
 
     // Coloca o DV calculado na posição 5.
     codigo[4] = char('0' + dv);
 
-
     return codigo;
 }
 
+
+// ======================================================
+// LINHA DIGITÁVEL
+// ======================================================
+
+string linhaDigitavel(string codigo)
+{
+    // Vamos construir essa função aqui.
+}
+
+
+// ======================================================
+// MAIN
+// ======================================================
 
 int main()
 {
@@ -284,7 +293,6 @@ int main()
     cout << "Tipo de convenio (4, 6, 7 ou 17): ";
     cin >> tipoConvenio;
 
-
     if (tipoConvenio == 4 || tipoConvenio == 6)
     {
         cout << "Campo livre (ate 25 caracteres): ";
@@ -295,15 +303,19 @@ int main()
         cout << "Campo livre (ate 19 caracteres): ";
         cin >> campoLivre;
     }
-    else
+    else if (tipoConvenio == 17)
     {
         cout << "Campo livre (ate 23 caracteres): ";
         cin >> campoLivre;
     }
+    else
+    {
+        cout << "alerta: tipo de convenio invalido." << endl;
+        return 0;
+    }
 
     // Calcula o fator de vencimento.
     int venc = fatorVencimento(dia, mes, ano);
-
 
     // Monta o código de barras.
     string codigo = codigoBarras(
@@ -314,7 +326,6 @@ int main()
         tipoConvenio,
         campoLivre
     );
-
 
     if (codigo == "")
     {

@@ -253,7 +253,35 @@ string codigoBarras(string banco, string moeda, int venc,
 
 string linhaDigitavel(string codigo)
 {
-    // Vamos construir essa função aqui.
+    // Campo 1:
+    // posições 1 a 4 + posições 20 a 24.
+    string campo1 = codigo.substr(0, 4);
+    campo1 += codigo.substr(19, 5);
+
+    int dv1 = modulo10Dv(campo1);
+
+    campo1 += char('0' + dv1);
+
+
+    // Campo 2:
+    // posições 25 a 34.
+    string campo2 = codigo.substr(24, 10);
+
+    int dv2 = modulo10Dv(campo2);
+
+    campo2 += char('0' + dv2);
+
+
+    // Campo 3:
+    // posições 35 a 44.
+    string campo3 = codigo.substr(34, 10);
+
+    int dv3 = modulo10Dv(campo3);
+
+    campo3 += char('0' + dv3);
+
+
+    return campo1;
 }
 
 

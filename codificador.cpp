@@ -251,39 +251,59 @@ string codigoBarras(string banco, string moeda, int venc,
 // LINHA DIGITÁVEL
 // ======================================================
 
+
 string linhaDigitavel(string codigo)
 {
-    // Campo 1:
-    // posições 1 a 4 + posições 20 a 24.
+    // Campo 1: posições 1 a 4 + posições 20 a 24
     string campo1 = codigo.substr(0, 4);
     campo1 += codigo.substr(19, 5);
 
     int dv1 = modulo10Dv(campo1);
-
     campo1 += char('0' + dv1);
 
-
-    // Campo 2:
-    // posições 25 a 34.
+    // Campo 2: posições 25 a 34
     string campo2 = codigo.substr(24, 10);
 
     int dv2 = modulo10Dv(campo2);
-
     campo2 += char('0' + dv2);
 
-
-    // Campo 3:
-    // posições 35 a 44.
+    // Campo 3: posições 35 a 44
     string campo3 = codigo.substr(34, 10);
 
     int dv3 = modulo10Dv(campo3);
-
     campo3 += char('0' + dv3);
 
+    // Campo 4: dígito verificador geral do código de barras
+    string campo4 = codigo.substr(4, 1);
 
-    return campo1;
+    // Campo 5: posições 6 a 19 do código de barras
+    string campo5 = codigo.substr(5, 14);
+
+    // Formata os campos com pontos e espaços
+    string linha = campo1.substr(0, 5) + "." +
+                   campo1.substr(5, 5) + " " +
+                   campo2.substr(0, 5) + "." +
+                   campo2.substr(5, 6) + " " +
+                   campo3.substr(0, 5) + "." +
+                   campo3.substr(5, 6) + " " +
+                   campo4 + " " +
+                   campo5;
+
+    return linha;
 }
 
+bool somenteNumeros(string texto)
+{
+    for (int i = 0; i < texto.length(); i++)
+    {
+        if (texto[i] < '0' || texto[i] > '9')
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 // ======================================================
 // MAIN
@@ -315,11 +335,18 @@ int main()
     cout << "Ano: ";
     cin >> ano;
 
-    cout << "Valor: ";
+    cout << "Valor (no formato 0.00): ";
     cin >> valor;
 
     cout << "Tipo de convenio (4, 6, 7 ou 17): ";
     cin >> tipoConvenio;
+
+    
+    if (!somenteNumeros(banco) || !somenteNumeros(moeda))
+    {
+        cout << "alerta vermelho: banco ou moeda invalido." << endl;
+        return 0;
+    }
 
     if (tipoConvenio == 4 || tipoConvenio == 6)
     {
@@ -331,15 +358,10 @@ int main()
         cout << "Campo livre (ate 19 caracteres): ";
         cin >> campoLivre;
     }
-    else if (tipoConvenio == 17)
+    else 
     {
         cout << "Campo livre (ate 23 caracteres): ";
         cin >> campoLivre;
-    }
-    else
-    {
-        cout << "alerta: tipo de convenio invalido." << endl;
-        return 0;
     }
 
     // Calcula o fator de vencimento.
@@ -363,6 +385,8 @@ int main()
     {
         cout << endl;
         cout << "Codigo de barras: " << codigo << endl;
+        string linha = linhaDigitavel(codigo);
+        cout << "Linha digitavel: " << linha << endl;
     }
 
     return 0;

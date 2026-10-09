@@ -59,21 +59,19 @@ Para executar:
 ./decodificador
 ```
 
-**Observação:** os nomes `codificador.cpp` e `decodificador.cpp` são exemplos. Caso os arquivos tenham outros nomes, substitua-os pelos nomes utilizados no projeto.
-
 As opções `-Wall` e `-Wextra` habilitam avisos adicionais do compilador, ajudando a identificar possíveis problemas no código. A opção `-std=c++17` seleciona o padrão C++17.
 
 ## 4. Limitações conhecidas
 
 Durante o desenvolvimento, algumas simplificações foram adotadas. Elas influenciam a quantidade de informações que o programa consegue identificar e a precisão de determinadas interpretações.
 
-### 4.1. Ausência do campo de agência e identificação dos convênios
+### 4.1. Ausência do campo nosso número e identificação dos convênios
 
 O programa não recebe o nosso número como uma informação separada. Em vez disso, os dados relacionados ao convênio são tratados por meio do campo livre do código de barras.
 
 Essa decisão simplificou a entrada e a organização dos dados, mas também limitou a identificação dos diferentes tipos de convênio. Como o Nosso número não é informado separadamente e o programa não recebe todas as informações necessárias para distinguir os formatos, não é possível identificar com precisão todos os tamanhos de convênio apenas pelo conteúdo do campo livre.
 
-O programa consegue reconhecer alguns formatos por características específicas da sua estrutura, como o preenchimento fixo de seis posições utilizado no formato de sete posições e o sufixo `21` adotado na implementação do formato livre de 17 posições. Entretanto, essas características não garantem a identificação correta em todos os casos, pois estruturas semelhantes podem gerar ambiguidades.
+O programa consegue reconhecer alguns formatos por características específicas da sua estrutura, como o preenchimento fixo de seis posições utilizado no formato de sete posições e o sufixo `21` adotado na implementação do formato livre de 17 posições. Entretanto, essas características não garantem a identificação correta em todos os casos, pois estruturas semelhantes podem gerar ambiguidades. Nos casos com 4 e 6 posições a diferenciação é feita através dos números fornecidos pelo banco, mas no decodificador não é possível diferenciar pois não se tem o conhecimento de quais números são o que pode se assemelhar a qualquer um de campo livre. 
 
 ### 4.2. Identificação do fator de vencimento
 
@@ -87,13 +85,19 @@ Essa regra é uma aproximação adotada para permitir a decodificação, mas nã
 
 O cálculo do fator de vencimento utiliza uma data-base e a diferença em dias entre essa data e o vencimento informado. Entretanto, a interpretação do fator em códigos recebidos exige atenção às mudanças de regra e aos ciclos de reinício do fator de vencimento.
 
-Assim, a conversão entre fator e data deve ser considerada dentro das regras implementadas no programa, não sendo garantida para todos os períodos e formatos possíveis.
+Assim, a conversão entre fator e data deve ser considerada dentro das regras implementadas no programa, não sendo garantida para todos os períodos e formatos possíveis. 
+
+No meu programa, o fator 1000 equivale a data incial base 03/07/2000, porém o fator 1000 é reiniciado 22/02/2025 fazendo que boletos a partir dessa data sejam confundidos no decodificador. Em conversa com o professor ele disse que pode ficar dessa forma sendo que eu documente minha escolha.
 
 ### 4.4. Escopo dos formatos implementados
 
 O programa utiliza regras específicas para montar e interpretar os campos do código de barras e da linha digitável. Embora alguns formatos de convênio sejam tratados por condições próprias, a identificação automática realizada pelo decodificador possui limitações.
 
 Dessa forma, o programa deve ser considerado uma implementação acadêmica das regras estudadas, e não uma ferramenta de validação bancária para uso em operações financeiras reais.
+
+### 4.5
+
+No codificador, a quantidade dos dados que serão recebidos no campo livre do tipo de convênio depende da quantidade de posições. Nas 17 posições eles recebem dois digitos fixos que é o 21, por esse motivo ele recebe 23 dados (Número do Convênio de 6 Posições + Nosso Número Livre do cliente de 17 posições) no campo livre ao invés de 25; nas 7 posições tem 6 zeros fixos, por esse motico recebe 19(Nosso número de 17 + 2 da carteira) ao invés de 25; já nas posições 4 e 6 não há número fixo então o campo livre recebe 25 dados mesmo.
 
 ## 5. Dificuldades de aprendizagem
 

@@ -164,13 +164,14 @@ void dataVencimento(int fator, int &dia, int &mes, int &ano)
 // Identifica o tipo de convênio pelo campo livre.
 int identificarTipoConvenio(string campoLivre)
 {
-    if (campoLivre.substr(0, 6) == "000000")
-    {
-        return 7;
-    }
-    else if (campoLivre.substr(23, 2) == "21")
+    
+    if (campoLivre.substr(23, 2) == "21")
     {
         return 17;
+    }
+    else if (campoLivre.substr(0, 6) == "000000")
+    {
+        return 7;
     }
     else
     {
@@ -246,7 +247,6 @@ int main()
     cout << "Digito verificador geral: " << dvGeral << endl;
     cout << "Campo livre: " << campoLivre << endl;
     cout << "Fator: " << fator << endl;
-    cout << "Valor em centavos: " << valor << endl;
     cout << "Valor: R$ " << valorReais << endl;
 
     // Exibe a data de vencimento.

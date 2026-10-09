@@ -95,7 +95,7 @@ O programa utiliza regras específicas para montar e interpretar os campos do c�
 
 Dessa forma, o programa deve ser considerado uma implementação acadêmica das regras estudadas, e não uma ferramenta de validação bancária para uso em operações financeiras reais.
 
-### 4.5
+### 4.5 Quantidade de números campo livre
 
 No codificador, a quantidade dos dados que serão recebidos no campo livre do tipo de convênio depende da quantidade de posições. Nas 17 posições eles recebem dois digitos fixos que é o 21, por esse motivo ele recebe 23 dados (Número do Convênio de 6 Posições + Nosso Número Livre do cliente de 17 posições) no campo livre ao invés de 25; nas 7 posições tem 6 zeros fixos, por esse motico recebe 19(Nosso número de 17 + 2 da carteira) ao invés de 25; já nas posições 4 e 6 não há número fixo então o campo livre recebe 25 dados mesmo.
 
